@@ -1,0 +1,3 @@
+* @netaiops/platform
+/backend/src/application/ @netaiops/platform-services
+/frontend/src/ @netaiops/web-ops

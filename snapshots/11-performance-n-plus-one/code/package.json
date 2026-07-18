@@ -1,0 +1,9 @@
+{
+  "name": "netaiops",
+  "private": true,
+  "workspaces": ["backend", "frontend", "packages/shared"],
+  "scripts": {
+    "dev": "npm run dev --workspace backend & npm run dev --workspace frontend",
+    "typecheck": "npm run typecheck --workspaces"
+  }
+}

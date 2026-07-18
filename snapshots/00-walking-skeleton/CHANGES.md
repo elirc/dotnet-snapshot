@@ -1,0 +1,21 @@
+# Changes in 00-walking-skeleton
+
+- code/package.json - Introduced the monorepo workspace used by every later snapshot.
+- code/tsconfig.base.json - Shared TypeScript compiler baseline for backend, frontend, and shared contracts.
+- code/packages/shared/package.json - Added a shared package for API contracts.
+- code/packages/shared/src/types.ts - Defined the first shared DTO between backend and frontend.
+- code/backend/package.json - Created the backend package scaffold.
+- code/backend/tsconfig.json - Added backend TypeScript project settings.
+- code/backend/src/server.ts - Added the API process entrypoint.
+- code/backend/src/app.ts - Wired the first API routes.
+- code/backend/src/data/memoryStore.ts - Seeded fake dashboard data for the walking skeleton.
+- code/backend/src/routes/healthRoutes.ts - Added a tiny health endpoint.
+- code/backend/src/routes/dashboardRoutes.ts - Added the first product endpoint.
+- code/frontend/package.json - Created the frontend package scaffold.
+- code/frontend/tsconfig.json - Added frontend TypeScript project settings.
+- code/frontend/index.html - Added the Vite HTML entry.
+- code/frontend/src/main.tsx - Added the React process entrypoint.
+- code/frontend/src/app/api.ts - Added the first API client wrapper.
+- code/frontend/src/app/App.tsx - Rendered the first page.
+- code/frontend/src/pages/DashboardPage.tsx - Built the first React view.
+- code/frontend/src/styles.css - Added restrained operational styling.

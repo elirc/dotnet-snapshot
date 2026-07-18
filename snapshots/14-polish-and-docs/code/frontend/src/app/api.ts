@@ -1,0 +1,92 @@
+import type { ApiEnvelope, DashboardSummary, IncidentDetailDto, IncidentSummaryDto, LoginResponse, TicketDetailDto, TicketSummaryDto } from '@netaiops/shared/src/types';
+import { authStore } from './authStore';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:4000';
+
+export class ApiError extends Error {
+  constructor(public readonly status: number, message: string, public readonly code?: string) {
+    super(message);
+  }
+}
+
+async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const session = authStore.getSnapshot();
+  const response = await fetch(API_BASE_URL + path, {
+    ...init,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(session.token ? { Authorization: 'Bearer ' + session.token } : {}),
+      ...(init?.headers ?? {})
+    }
+  });
+  if (!response.ok) {
+    const body = await response.json().catch(() => undefined);
+    throw new ApiError(response.status, body?.error?.message ?? 'Request failed', body?.error?.code);
+  }
+  return response.json() as Promise<T>;
+}
+
+export const api = {
+  async login(input: { email: string; password: string }) {
+    const envelope = await request<ApiEnvelope<LoginResponse>>('/api/auth/login', { method: 'POST', body: JSON.stringify(input) });
+    return envelope.data;
+  },
+  async getDashboardSummary() {
+    const envelope = await request<ApiEnvelope<DashboardSummary>>('/api/dashboard/summary');
+    return envelope.data;
+  },
+  async listTickets() {
+    const envelope = await request<ApiEnvelope<TicketSummaryDto[]>>('/api/tickets');
+    return envelope.data;
+  },
+  async getTicket(id: string) {
+    const envelope = await request<ApiEnvelope<TicketDetailDto>>('/api/tickets/' + id);
+    return envelope.data;
+  },
+  async createTicket(input: { title: string; description: string; priority: string; category: string }) {
+    const envelope = await request<ApiEnvelope<TicketDetailDto>>('/api/tickets', { method: 'POST', body: JSON.stringify(input) });
+    return envelope.data;
+  },
+  async updateTicketStatus(id: string, status: string) {
+    const envelope = await request<ApiEnvelope<TicketDetailDto>>('/api/tickets/' + id + '/status', { method: 'PATCH', body: JSON.stringify({ status }) });
+    return envelope.data;
+  },
+  async searchLogs(input: { search?: string }) {
+    const params = new URLSearchParams();
+    if (input.search) params.set('search', input.search);
+    const envelope = await request<ApiEnvelope<{ items: Array<{ id: string; timestamp: string; serviceName: string; level: string; message: string; traceId: string }>; total: number; page: number; pageSize: number }>>('/api/logs?' + params.toString());
+    return envelope.data;
+  },
+  async listKnowledgeDocuments() {
+    const envelope = await request<ApiEnvelope<Array<{ id: string; title: string; serviceName: string; updatedAt: string }>>>('/api/knowledge-documents');
+    return envelope.data;
+  },
+  async listAgentRuns() {
+    const envelope = await request<ApiEnvelope<Array<{ id: string; incidentId: string; status: string; startedBy: string; recommendation: string }>>>('/api/agent-runs');
+    return envelope.data;
+  },
+  async listApprovals() {
+    const envelope = await request<ApiEnvelope<Array<{ id: string; agentRunId: string; status: string; requestedAction: string }>>>('/api/agent-runs/approvals');
+    return envelope.data;
+  },
+  async listEvalRuns() {
+    const envelope = await request<ApiEnvelope<Array<{ id: string; name: string; passRate: number; ranAt: string }>>>('/api/evals');
+    return envelope.data;
+  },
+  async listAdminUsers() {
+    const envelope = await request<ApiEnvelope<Array<{ id: string; email: string; displayName: string; role: string; isActive: boolean }>>>('/api/admin/users');
+    return envelope.data;
+  },
+  async listAdminSettings() {
+    const envelope = await request<ApiEnvelope<Array<{ key: string; value: string; description: string }>>>('/api/admin/settings');
+    return envelope.data;
+  },
+  async listIncidents() {
+    const envelope = await request<ApiEnvelope<IncidentSummaryDto[]>>('/api/incidents');
+    return envelope.data;
+  },
+  async getIncident(id: string) {
+    const envelope = await request<ApiEnvelope<IncidentDetailDto>>('/api/incidents/' + id);
+    return envelope.data;
+  }
+};
